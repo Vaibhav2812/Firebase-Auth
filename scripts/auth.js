@@ -1,27 +1,16 @@
-//get data
-db.collection('guides').get().then(snapshot => {
-  setUpGuides(snapshot.docs);
-})
-
-db.collection('guides').set({
-  title: 'DIrection is more important than speed',
-  content: `The direction you are heading is more important than the speed you are moving to get there. The point of this quote, I believe, is to not worry about how long you are taking to achieve your goals.
-   The point is are you going in the right direction`
-})
-
-
-
 
 //listen auth changed event
 auth.onAuthStateChanged(user => {
-  if(user) {
-    console.log('user logged in', user);
+  if (user) {
+    db.collection("guides")
+      .get()
+      .then(snapshot => {
+        setUpGuides(snapshot.docs);
+      });
   } else {
-    console.log('user logged out', user);
+    setUpGuides([]);
   }
-})
-
-
+});
 
 const signupForm = document.querySelector("#signup-form");
 signupForm.addEventListener("submit", e => {
@@ -53,11 +42,13 @@ loginForm.addEventListener("submit", e => {
   //get user info
   const email = loginForm["login-email"].value;
   const password = loginForm["login-password"].value;
-  auth.signInWithEmailAndPassword(email, password).then(cred => {
-    const modal = document.querySelector("#modal-login");
-    M.Modal.getInstance(modal).close();
-    loginForm.reset();
-  }).catch(err => {
-    console.log(err);
-  })
+  auth.signInWithEmailAndPassword(email, password)
+    .then(cred => {
+      const modal = document.querySelector("#modal-login");
+      M.Modal.getInstance(modal).close();
+      loginForm.reset();
+    })
+    .catch(err => {
+      onError(err);
+    });
 });
